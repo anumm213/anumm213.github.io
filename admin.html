@@ -45,9 +45,9 @@
   .btn-link-site:hover { background: #375a8a; }
 
   .layout {
-    display: grid; grid-template-columns: 380px 1fr;
+    display: grid; grid-template-columns: 400px 1fr;
     gap: 1.25rem; padding: 1.25rem 1.5rem;
-    max-width: 1400px; margin: 0 auto;
+    max-width: 1600px; margin: 0 auto;
   }
 
   .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
@@ -213,6 +213,7 @@
     .stats-row { grid-template-columns: 1fr 1fr; }
   }
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 <body>
 
@@ -224,7 +225,9 @@
   <div class="site-status" id="siteStatus">
     <div class="site-status-dot" id="statusDot"></div>
     <div class="site-status-text" id="statusText">No website linked</div>
-    <button class="btn-link-site" onclick="linkWebsite()">🔗 Link index.html</button>
+    <button class="btn-link-site" id="linkBtn" onclick="linkWebsite()">🔗 Link Website Folder</button>
+    <button class="btn-link-site" id="restoreBtn" onclick="restoreWebsite()" style="display:none; background:#1e8e3e;">↺ Restore Folder Link</button>
+    <button class="btn-link-site" id="resetLinkBtn" onclick="resetWebsiteLink()" style="display:none; background:#d93025; margin-left: 0.5rem;">Disconnect</button>
   </div>
 </header>
 
@@ -237,8 +240,11 @@
       </div>
       <div class="panel-body">
         <div class="tabs">
-          <button class="tab active" onclick="switchTab('manual')">✏️ Type It In</button>
-          <button class="tab" onclick="switchTab('csv')">📊 Spreadsheet</button>
+          <button class="tab active" onclick="switchTab('manual')">✏️ Products</button>
+          
+          <button class="tab" onclick="switchTab('categories')">📁 Categories</button>
+          <button class="tab" onclick="switchTab('services')">🩺 Services</button>
+          <button class="tab" onclick="switchTab('settings')">📞 Contact</button>
         </div>
 
         <!-- MANUAL -->
@@ -251,20 +257,7 @@
           <div class="field-row">
             <div class="field">
               <label>Category *</label>
-              <select id="fCat">
-                <option value="">Select category…</option>
-                <option value="vitamins">Vitamins & Supplements</option>
-                <option value="skincare">Skincare</option>
-                <option value="baby">Baby & Family</option>
-                <option value="pain">Pain Relief</option>
-                <option value="cold">Cold & Flu</option>
-                <option value="digestive">Digestive Health</option>
-                <option value="allergy">Allergy</option>
-                <option value="diabetes">Diabetes Care</option>
-                <option value="eyecare">Eye Care</option>
-                <option value="dental">Dental</option>
-                <option value="other">Other</option>
-              </select>
+              <select id="fCat"><option value="">Select category…</option></select>
             </div>
             <div class="field">
               <label>Price (€) *</label>
@@ -288,7 +281,7 @@
             </div>
             <input type="hidden" id="fBadge" value="">
           </div>
-          <div class="field">
+          <div class="field" style="display:none;">
             <label>Product Image</label>
             <!-- URL option -->
             <div class="img-url-row">
@@ -306,42 +299,128 @@
             <img class="img-preview" id="imgPreview" alt="Preview">
             <button class="btn-secondary" id="clearImgBtn" onclick="clearImage()" style="display:none;margin-top:0.4rem;width:auto;padding:0.36rem 0.9rem;font-size:0.73rem;">✕ Remove image</button>
           </div>
+
           <div class="field">
-            <label>Detail Fields — e.g. Size, Strength (up to 3)</label>
-            <div id="detailFields">
-              <div class="field-row" style="margin-bottom:0.45rem"><input type="text" placeholder="Label (e.g. Size)" class="dlabel"><input type="text" placeholder="Value (e.g. 90 Caps)" class="dvalue"></div>
-              <div class="field-row" style="margin-bottom:0.45rem"><input type="text" placeholder="Label" class="dlabel"><input type="text" placeholder="Value" class="dvalue"></div>
-              <div class="field-row"><input type="text" placeholder="Label" class="dlabel"><input type="text" placeholder="Value" class="dvalue"></div>
+            <label>Product Photos</label>
+            <textarea id="fMediaUrls" style="display:none;"></textarea>
+            <div id="mediaPreviews" style="display:flex; gap:0.5rem; overflow-x:auto; margin-bottom: 0.5rem; padding-bottom: 0.5rem;">
+              <div style="font-size:0.8rem; color:var(--mid); padding:1rem; border:1px dashed var(--border); border-radius:6px; text-align:center; width:100%;">No photos uploaded yet</div>
+            </div>
+            <div style="margin-top: 0.5rem; text-align: left;">
+              <input type="file" id="mediaUploadInput" multiple accept="image/*" style="display:none;" onchange="uploadMediaFiles(this)">
+              <input type="file" id="catMediaUploadInput" accept="image/*" style="display:none;" onchange="uploadCategoryPhoto(this)">
+              <button class="btn-secondary" onclick="triggerMediaUpload()" style="width:auto; padding:0.4rem 0.8rem; font-size:0.75rem;">📸 Upload Photos</button>
             </div>
           </div>
           <button class="btn-primary" onclick="saveProduct()">✓ Save Product</button>
           <button class="btn-secondary" id="cancelEditBtn" onclick="cancelEdit()" style="display:none;">Cancel Edit</button>
-        </div>
 
-        <!-- CSV -->
-        <div class="form-section" id="csvSection">
+          <hr style="border:0; border-top:1px solid var(--border); margin:2rem 0;">
+          <div style="font-size:1rem; font-weight:800; color:var(--blue-dark); text-transform:uppercase; margin-bottom:1rem;">📦 Bulk Import</div>
+
           <div class="csv-template">
             <strong>📋 Column order (7 columns):</strong>
-            <code>Name, Category, Price, Was Price, Description, Badge, <span class="col-new">Image URL</span></code>
+            <code>Name, Category, Price, Was Price, Description, Badge</code>
             <br><br>
             <strong>Example row:</strong>
-            <code>Vitamin D3, vitamins, 8.99, , Immune support 90 caps, new, https://example.com/vitd3.jpg</code>
+            <code>Vitamin D3, vitamins, 8.99, , Immune support 90 caps, new</code>
             <br><br>
             <strong>Tips:</strong>
-            <code>• Leave Image URL blank if no image<br>• Badge options: new / sale / (blank)<br>• Was Price: blank if not on sale</code>
+            <code>• Badge options: new / sale / (blank)<br>• Was Price: blank if not on sale</code>
           </div>
+                    <div style="background:var(--bg); padding:1rem; border-radius:6px; border:1px dashed var(--border); margin-bottom: 1rem;">
+            <strong style="display:block; margin-bottom:0.5rem; font-size:0.8rem;">1. Bulk Upload Photos</strong>
+            <p style="font-size:0.75rem; color:var(--mid); margin-bottom:0.5rem;">Select multiple photos from your computer to upload them straight to the website's <code>assets</code> folder. Then, in your CSV, just use their filenames (e.g. <code>assets/photo.jpg</code>).</p>
+            <input type="file" id="bulkImageUploadInput" multiple accept="image/*" style="display:none" onchange="uploadBulkImages(this)">
+            <button class="btn-secondary" onclick="triggerBulkImageUpload()" style="width:auto;">🖼️ Select Multiple Photos...</button>
+          </div>
+          <strong style="display:block; margin-bottom:0.5rem; font-size:0.8rem;">2. Upload Spreadsheet</strong>
           <div class="csv-drop">
-            <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(this)">
+            <input type="file" id="csvFile" accept=".csv, .xlsx, .xls" onchange="handleCSV(this)">
             <span class="upload-icon">📊</span>
-            <p>Upload your CSV file<br><span style="font-size:0.68rem;color:#aaa;">CSV accepted</span></p>
+            <p>Upload Spreadsheet<br><span style="font-size:0.68rem;color:#aaa;">XLSX or CSV accepted</span></p>
           </div>
-          <p style="font-size:0.76rem;color:var(--mid);text-align:center;margin-bottom:0.65rem;">— or paste CSV text directly —</p>
-          <div class="field">
-            <textarea id="csvText" placeholder="Paste CSV rows here:&#10;Vitamin D3, vitamins, 8.99, , Immune support, new, https://…" style="min-height:110px;font-family:monospace;font-size:0.75rem;"></textarea>
+          <div style="display: none;">
+            <p style="font-size:0.76rem;color:var(--mid);text-align:center;margin-bottom:0.65rem;">— or paste spreadsheet text directly —</p>
+            <div class="field">
+              <textarea id="csvText" placeholder="Paste CSV rows here:&#10;Vitamin D3, vitamins, 8.99, , Immune support, new, https://…" style="min-height:110px;font-family:monospace;font-size:0.75rem;"></textarea>
+            </div>
           </div>
           <button class="btn-primary" onclick="importCSV()">📥 Import Products</button>
-          <button class="btn-secondary" onclick="downloadTemplate()">⬇ Download Template CSV</button>
+          <button class="btn-secondary" onclick="downloadTemplate()">⬇ Download Excel Template</button>
+        
         </div>
+
+        
+        <!-- CATEGORIES -->
+        <div class="form-section" id="categoriesSection">
+          <div style="font-size:0.8rem; color:var(--mid); margin-bottom:1rem;">Manage the categories that appear in the filter tabs on the main website.</div>
+          
+          <div id="catListUI" style="margin-bottom:1rem; border:1px solid var(--border); border-radius:6px; overflow:hidden;"></div>
+
+          <div style="background:var(--bg); padding:1rem; border-radius:6px; border:1px dashed var(--border);">
+            <strong style="display:block; margin-bottom:0.5rem; font-size:0.8rem;">Add New Category</strong>
+            <div class="field">
+              <label>Category ID</label>
+              <input type="text" id="newCatId" placeholder="e.g. firstaid">
+            </div>
+            <div class="field">
+              <label>Category Label</label>
+              <input type="text" id="newCatLabel" placeholder="e.g. First Aid">
+            </div>
+            <div class="field">
+              <label>Emoji Icon</label>
+              <input type="text" id="newCatEmoji" placeholder="e.g. 🚑" maxlength="2">
+            </div>
+            <button class="btn-secondary" onclick="addCategory()">➕ Add Category</button>
+          </div>
+        </div>
+
+        <!-- SERVICES -->
+        <div class="form-section" id="servicesSection">
+          <div style="font-size:0.8rem; color:var(--mid); margin-bottom:1rem;">Manage the professional services displayed on your website.</div>
+          
+          <div id="serviceListUI" style="margin-bottom:1rem; border:1px solid var(--border); border-radius:6px; overflow:hidden;"></div>
+
+          <div style="background:var(--bg); padding:1rem; border-radius:6px; border:1px dashed var(--border);">
+            <strong style="display:block; margin-bottom:0.5rem; font-size:0.8rem;">Add New Service</strong>
+            <div class="field">
+              <label>Service Name</label>
+              <input type="text" id="newSvcName" placeholder="e.g. Health Consultations">
+            </div>
+            <div class="field">
+              <label>Emoji Icon</label>
+              <input type="text" id="newSvcEmoji" placeholder="e.g. 🩺" maxlength="2">
+            </div>
+            <div class="field">
+              <label>Description</label>
+              <textarea id="newSvcDesc" placeholder="e.g. Free one-to-one sessions..."></textarea>
+            </div>
+            <button class="btn-secondary" onclick="addService()">➕ Add Service</button>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="form-section" id="settingsSection">
+          <div style="font-size:0.8rem; color:var(--mid); margin-bottom:1rem;">Manage the contact information and social media links displayed on your website.</div>
+          
+          <div class="field">
+            <label>Phone Number (Displayed & Clickable)</label>
+            <input type="text" id="fPhone" placeholder="e.g. (01) 295 0819">
+          </div>
+          <div class="field">
+            <label>Instagram Link (Full URL)</label>
+            <input type="url" id="fInsta" placeholder="e.g. https://www.instagram.com/belarminepharmacy1/">
+          </div>
+          <div class="field">
+            <label>Facebook Link (Full URL)</label>
+            <input type="url" id="fFace" placeholder="e.g. https://www.facebook.com/yourpage">
+          </div>
+          
+          <button class="btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+        </div>
+
+        
       </div>
     </div>
   </div>
@@ -394,13 +473,34 @@ let nextId = 1;
 let filterQ = '';
 let currentImg = null;
 let currentImgUrl = '';
+let siteSettings = { phone: '(01) 295 0819', instagram: 'https://www.instagram.com/belarminepharmacy1/', facebook: '' };
 let websiteFileHandle = null;
+let websiteDirHandle = null;
 
-const catLabels = {
-  vitamins:'Vitamins & Supplements', skincare:'Skincare', baby:'Baby & Family',
-  pain:'Pain Relief', cold:'Cold & Flu', digestive:'Digestive Health',
-  allergy:'Allergy', diabetes:'Diabetes Care', eyecare:'Eye Care', dental:'Dental', other:'Other'
-};
+let services = [
+  {icon:"💊", name:"Prescription Dispensing", desc:"All prescriptions dispensed quickly and accurately with minimal wait times."},
+  {icon:"💉", name:"Vaccinations", desc:"Flu, travel, and other vaccinations — no GP appointment needed."},
+  {icon:"🩺", name:"Health Consultations", desc:"Free one-to-one sessions for minor ailments and personalised health advice."},
+  {icon:"✈️", name:"Travel Health", desc:"Travel assessments, antimalarials, and country-specific health advice."},
+  {icon:"🩸", name:"Health Screenings", desc:"Blood pressure, cholesterol, and diabetes checks available today."},
+  {icon:"📦", name:"Home Delivery", desc:"Regular prescription delivery to your door for those who can't visit."},
+  {icon:"🌿", name:"Skincare Advice", desc:"Curated skincare, vitamins, and natural health products with expert guidance."},
+  {icon:"👶", name:"Baby & Family", desc:"Expert advice on infant care and a full range of baby health products."}
+];
+
+let categories = [
+  {id:"vitamins", label:"Vitamins & Supplements", emoji:"💊"},
+  {id:"cold", label:"Cold & Flu", emoji:"🤧"},
+  {id:"baby", label:"Baby & Family", emoji:"🍼"},
+  {id:"pain", label:"Pain Relief", emoji:"💪"},
+  {id:"skincare", label:"Skincare", emoji:"🧴"},
+  {id:"eyecare", label:"Eye Care", emoji:"👁️"},
+  {id:"digestive", label:"Digestive Health", emoji:"🌿"},
+  {id:"allergy", label:"Allergy", emoji:"🌸"},
+  {id:"dental", label:"Dental", emoji:"🦷"},
+  {id:"diabetes", label:"Diabetes Care", emoji:"🩺"},
+  {id:"other", label:"Other", emoji:"📦"}
+];
 
 // ── IMAGE URL ──────────────────────────────────────────────────────────
 
@@ -453,22 +553,253 @@ function clearImage() {
 
 function resolvedImg() { return currentImgUrl || currentImg || ''; }
 
+
+function renderCategories() {
+  const ui = document.getElementById('catListUI');
+  ui.innerHTML = categories.map((c,i) => `
+    <div style="display:flex; padding:0.5rem 1rem; border-bottom:1px solid var(--border); align-items:center; gap:1rem; background:${i%2===0?'#fff':'var(--bg)'}">
+      ${c.img ? `<img src="${c.img}" style="width:30px; height:30px; border-radius:4px; object-fit:cover;">` : `<div style="font-size:1.2rem; width:30px; text-align:center;">${c.emoji||'📦'}</div>`}
+      <div style="flex:1;">
+        <div style="font-weight:600; font-size:0.85rem;">${c.label}</div>
+        <div style="font-size:0.7rem; color:var(--mid);">ID: ${c.id}</div>
+      </div>
+      <button onclick="triggerCategoryPhotoUpload(${i})" class="btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.7rem; width:auto; border-radius:4px;">📸 Photo</button>
+      <button onclick="removeCategory(${i})" style="background:none; border:none; color:#d93025; cursor:pointer; font-size:0.8rem; margin-left:0.5rem;">✕</button>
+    </div>
+  `).join('');
+  
+  const sel = document.getElementById('fCat');
+  const curr = sel.value;
+  sel.innerHTML = '<option value="">Select category…</option>' + categories.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+  sel.value = curr;
+}
+
+function addCategory() {
+  const id = document.getElementById('newCatId').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+  const label = document.getElementById('newCatLabel').value.trim();
+  const emoji = document.getElementById('newCatEmoji').value.trim() || '📦';
+  if (!id || !label) { showToast('⚠ ID and Label required'); return; }
+  if (categories.find(c => c.id === id)) { showToast('⚠ Category ID already exists'); return; }
+  categories.push({id, label, emoji});
+  document.getElementById('newCatId').value = '';
+  document.getElementById('newCatLabel').value = '';
+  document.getElementById('newCatEmoji').value = '';
+  renderCategories();
+  showToast('✓ Category added');
+}
+
+function removeCategory(index) {
+  if (confirm('Remove this category? (Products using this category will still exist but wont show a filter pill unless you change their category)')) {
+    categories.splice(index, 1);
+    renderCategories();
+  }
+}
+
+
+let targetCategoryIndex = -1;
+
+async function triggerCategoryPhotoUpload(index) {
+  if (!websiteDirHandle) { showToast('⚠ Link the website folder first!'); return; }
+  let perm = await websiteDirHandle.queryPermission({ mode: 'readwrite' });
+  if (perm !== 'granted') {
+    perm = await websiteDirHandle.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') return;
+  }
+  targetCategoryIndex = index;
+  document.getElementById('catMediaUploadInput').click();
+}
+
+async function uploadCategoryPhoto(input) {
+  if (targetCategoryIndex === -1) return;
+  const file = input.files[0];
+  if (!file) return;
+  try {
+    const mediaDir = await websiteDirHandle.getDirectoryHandle('assets', { create: true });
+    const cleanName = 'cat_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const fileHandle = await mediaDir.getFileHandle(cleanName, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(file);
+    await writable.close();
+    
+    categories[targetCategoryIndex].img = 'assets/' + cleanName;
+    input.value = '';
+    renderCategories();
+    showToast('✓ Category photo uploaded');
+  } catch (e) {
+    setStatus('err', 'Upload failed: ' + e.message);
+  }
+}
+
+
+async function triggerBulkImageUpload() {
+  if (!websiteDirHandle) { showToast('⚠ Link the website folder first!'); return; }
+  let perm = await websiteDirHandle.queryPermission({ mode: 'readwrite' });
+  if (perm !== 'granted') {
+    perm = await websiteDirHandle.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') return;
+  }
+  document.getElementById('bulkImageUploadInput').click();
+}
+
+async function uploadBulkImages(input) {
+  if (!websiteDirHandle) { showToast('⚠ Link the website folder first!'); return; }
+  const files = input.files;
+  if (!files.length) return;
+  try {
+    const mediaDir = await websiteDirHandle.getDirectoryHandle('assets', { create: true });
+    for (let file of files) {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileHandle = await mediaDir.getFileHandle(cleanName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(file);
+      await writable.close();
+    }
+    showToast(`✓ Bulk uploaded ${files.length} photo(s) to assets/ folder!`);
+    input.value = '';
+  } catch (e) {
+    setStatus('err', 'Upload failed: ' + e.message);
+  }
+}
+
 // ── FILE SYSTEM ────────────────────────────────────────────────────────
 
 async function linkWebsite() {
-  if (!('showOpenFilePicker' in window)) { setStatus('err', '⚠ Use Chrome or Edge for this feature.'); return; }
+  if (!('showDirectoryPicker' in window)) { setStatus('err', '⚠ Browser not supported.'); return; }
   try {
-    const [handle] = await window.showOpenFilePicker({ types: [{ description: 'HTML files', accept: { 'text/html': ['.html'] } }], multiple: false });
-    if (handle.name !== 'index.html') { if (!confirm(`Selected "${handle.name}" — correct file?`)) return; }
-    websiteFileHandle = handle;
-    updateLinkStatus(true, handle.name);
-    showToast(`✓ Linked to ${handle.name}`);
-    setStatus('ok', `✓ Linked to "${handle.name}" — click Update index.html to publish.`);
+    const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    websiteDirHandle = dirHandle;
+    try {
+      websiteFileHandle = await dirHandle.getFileHandle('index.html');
+    } catch(err) {
+      setStatus('err', '⚠ index.html not found in that folder. Please select the correct website folder.');
+      return;
+    }
+    setStoredHandle(dirHandle);
+    document.getElementById('linkBtn').style.display = 'none';
+    document.getElementById('restoreBtn').style.display = 'none';
+    updateLinkStatus(true, dirHandle.name);
+    showToast(`✓ Linked to folder ${dirHandle.name}`);
+    setStatus('ok', `✓ Linked to folder "${dirHandle.name}" — click Update index.html to publish.`);
+
+    // Load existing products
+    try {
+      let perm = await websiteFileHandle.queryPermission({ mode: 'read' });
+      if (perm !== 'granted') perm = await websiteFileHandle.requestPermission({ mode: 'read' });
+      if (perm === 'granted') {
+        const file = await websiteFileHandle.getFile();
+        const html = await file.text();
+        const s = '// ===== PRODUCTS_START =====', e = '// ===== PRODUCTS_END =====';
+        const cs = '// ===== CATEGORIES_START =====', ce = '// ===== CATEGORIES_END =====';
+        const ss = '// ===== SETTINGS_START =====', se = '// ===== SETTINGS_END =====';
+        const svs = '// ===== SERVICES_START =====', sve = '// ===== SERVICES_END =====';
+        
+        if (html.includes(svs) && html.includes(sve)) {
+          const svcCode = html.slice(html.indexOf(svs)+svs.length, html.indexOf(sve));
+          const svcArrayCode = svcCode.replace('const services =', '').trim().replace(/;$/, '');
+          const loadedSvcs = new Function(`return ${svcArrayCode};`)();
+          if (loadedSvcs) { services = loadedSvcs; renderServices(); }
+        }
+
+        if (html.includes(ss) && html.includes(se)) {
+          const setCode = html.slice(html.indexOf(ss)+ss.length, html.indexOf(se));
+          const setCodeClean = setCode.replace('const siteSettings =', '').trim().replace(/;$/, '');
+          const loadedSet = new Function(`return ${setCodeClean};`)();
+          if (loadedSet) { siteSettings = loadedSet; renderSettings(); }
+        }
+        
+        if (html.includes(cs) && html.includes(ce)) {
+        const catCode = html.slice(html.indexOf(cs)+cs.length, html.indexOf(ce));
+        const catArrayCode = catCode.replace('const categories =', '').trim().replace(/;$/, '');
+        const loadedCats = new Function(`return ${catArrayCode};`)();
+        if (Array.isArray(loadedCats)) { categories = loadedCats; renderCategories(); }
+      }
+      if (html.includes(s) && html.includes(e)) {
+          const code = html.slice(html.indexOf(s)+s.length, html.indexOf(e));
+          const arrayCode = code.replace('const prods =', '').trim().replace(/;$/, '');
+          const loadedProds = new Function(`return ${arrayCode};`)();
+          if (Array.isArray(loadedProds)) {
+            products = loadedProds;
+            nextId = Math.max(0, ...products.map(p => p.id || 0)) + 1;
+            renderCategories(); renderList(); updateStats();
+            if (products.length > 0) {
+              showToast(`✓ Loaded ${products.length} existing products`);
+              setStatus('ok', `✓ Linked to "${dirHandle.name}". Loaded ${products.length} existing products.`);
+            }
+          }
+        }
+      }
+    } catch(err) { console.error('Failed to load existing products:', err); }
   } catch(e) { if (e.name !== 'AbortError') setStatus('err', 'Could not link: ' + e.message); }
 }
 
+async function triggerMediaUpload() {
+  if (!websiteDirHandle) { showToast('⚠ Link the website folder first!'); return; }
+  let perm = await websiteDirHandle.queryPermission({ mode: 'readwrite' });
+  if (perm !== 'granted') {
+    perm = await websiteDirHandle.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') return;
+  }
+  document.getElementById('mediaUploadInput').click();
+}
+
+async function uploadMediaFiles(input) {
+  if (!websiteDirHandle) { showToast('⚠ Link the website folder first!'); return; }
+  const files = input.files;
+  if (!files.length) return;
+  try {
+    let perm = await websiteDirHandle.queryPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') perm = await websiteDirHandle.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') throw new Error('Permission denied');
+    
+    const mediaDir = await websiteDirHandle.getDirectoryHandle('assets', { create: true });
+    
+    for (let file of files) {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileHandle = await mediaDir.getFileHandle(cleanName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(file);
+      await writable.close();
+      
+      const textArea = document.getElementById('fMediaUrls');
+      const prefix = textArea.value ? '\n' : '';
+      textArea.value += prefix + 'assets/' + cleanName;
+    }
+    showToast(`✓ Uploaded ${files.length} file(s) to assets folder`);
+    input.value = '';
+    renderMediaPreviews();
+  } catch (e) {
+    setStatus('err', 'Upload failed: ' + e.message);
+  }
+}
+
+function renderMediaPreviews() {
+  const container = document.getElementById('mediaPreviews');
+  const urls = document.getElementById('fMediaUrls').value.split('\n').map(l=>l.trim()).filter(l=>l);
+  if (urls.length === 0) {
+    container.innerHTML = '<div style="font-size:0.8rem; color:var(--mid); padding:1rem; border:1px dashed var(--border); border-radius:6px; text-align:center; width:100%;">No photos uploaded yet</div>';
+    return;
+  }
+  container.innerHTML = urls.map((url, i) => `
+    <div style="position:relative; flex: 0 0 80px; height: 80px; border-radius: 6px; border:1px solid var(--border); overflow:hidden; background: var(--blue-pale);">
+      <img src="${url}" style="width:100%; height:100%; object-fit:cover; cursor:zoom-in;" onclick="openFullscreenPreview('${url}')">
+      <button onclick="removeMedia(${i})" title="Remove photo" style="position:absolute; top:2px; right:2px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+    </div>
+  `).join('');
+}
+
+function openFullscreenPreview(url) {
+  document.getElementById('fullscreenImg').src = url;
+  document.getElementById('fullscreenPreview').style.display = 'flex';
+}
+
+function removeMedia(index) {
+  const urls = document.getElementById('fMediaUrls').value.split('\n').map(l=>l.trim()).filter(l=>l);
+  urls.splice(index, 1);
+  document.getElementById('fMediaUrls').value = urls.join('\n');
+  renderMediaPreviews();
+}
+
 async function publishToWebsite() {
-  if (products.length === 0) { showToast('⚠ No products to publish'); return; }
   if (!websiteFileHandle) { setStatus('info', '👆 Click "Link index.html" in the top bar first.'); return; }
   let perm = await websiteFileHandle.queryPermission({ mode: 'readwrite' });
   if (perm !== 'granted') perm = await websiteFileHandle.requestPermission({ mode: 'readwrite' });
@@ -477,22 +808,62 @@ async function publishToWebsite() {
     const file = await websiteFileHandle.getFile();
     let html = await file.text();
     const s = '// ===== PRODUCTS_START =====', e = '// ===== PRODUCTS_END =====';
+    const cs = '// ===== CATEGORIES_START =====', ce = '// ===== CATEGORIES_END =====';
+    const ss = '// ===== SETTINGS_START =====', se = '// ===== SETTINGS_END =====';
+    const svs = '// ===== SERVICES_START =====', sve = '// ===== SERVICES_END =====';
     if (!html.includes(s) || !html.includes(e)) { setStatus('err', '⚠ Markers not found — make sure this is the correct index.html.'); return; }
+    
     html = html.slice(0, html.indexOf(s)+s.length) + '\n' + buildProductsCode() + '\n' + html.slice(html.indexOf(e));
+    if (html.includes(cs) && html.includes(ce)) {
+      html = html.slice(0, html.indexOf(cs)+cs.length) + '\n' + buildCategoriesCode() + '\n' + html.slice(html.indexOf(ce));
+    }
+    if (html.includes(svs) && html.includes(sve)) {
+      html = html.slice(0, html.indexOf(svs)+svs.length) + '\n' + buildServicesCode() + '\n' + html.slice(html.indexOf(sve));
+    }
+    if (html.includes(ss) && html.includes(se)) {
+      html = html.slice(0, html.indexOf(ss)+ss.length) + '\n' + buildSettingsCode() + '\n' + html.slice(html.indexOf(se));
+    }
+    
     const w = await websiteFileHandle.createWritable(); await w.write(html); await w.close();
     const btn = document.getElementById('publishBtn');
     btn.textContent = '✓ Updated!'; btn.classList.add('success');
     setTimeout(() => { btn.textContent = '✦ Update index.html'; btn.classList.remove('success'); }, 3000);
-    setStatus('ok', `✓ ${products.length} product${products.length!==1?'s':''} published at ${new Date().toLocaleTimeString()}. Refresh index.html to see changes.`);
-    showToast(`✓ ${products.length} products published!`);
+    setStatus('ok', `✓ Published at ${new Date().toLocaleTimeString()}. Refresh index.html to see changes.`);
+    showToast(`✓ Website successfully updated!`);
   } catch(e) { setStatus('err', 'Write failed: ' + e.message); }
+}
+
+function saveSettings() {
+  siteSettings.phone = document.getElementById('fPhone').value.trim();
+  siteSettings.instagram = document.getElementById('fInsta').value.trim();
+  siteSettings.facebook = document.getElementById('fFace').value.trim();
+  showToast('💾 Settings saved! Click "Update index.html" to push live.');
+}
+
+function renderSettings() {
+  document.getElementById('fPhone').value = siteSettings.phone || '';
+  document.getElementById('fInsta').value = siteSettings.instagram || '';
+  document.getElementById('fFace').value = siteSettings.facebook || '';
+}
+
+function buildSettingsCode() {
+  return `const siteSettings = ${JSON.stringify(siteSettings)};`;
+}
+
+function buildCategoriesCode() {
+  return `const categories = ${JSON.stringify(categories, null, 2)};`;
+}
+
+function buildServicesCode() {
+  return `const services = ${JSON.stringify(services, null, 2)};`;
 }
 
 function buildProductsCode() {
   const lines = products.map((p,i) => {
     const det = (p.d||[]).length ? p.d.map(d=>`{l:${JSON.stringify(d.l)},v:${JSON.stringify(d.v)}}`).join(',') : '';
     const img = p.img ? `,img:${JSON.stringify(p.img)}` : '';
-    return `  {id:${i+1},e:${JSON.stringify(p.e||'💊')},n:${JSON.stringify(p.n)},c:${JSON.stringify(p.c)},cl:${JSON.stringify(p.cl)},p:${JSON.stringify(p.p)},b:${JSON.stringify(p.b||'')},was:${JSON.stringify(p.was||'')},desc:${JSON.stringify(p.desc||'')},d:[${det}]${img}}`;
+    const media = (p.media && p.media.length) ? `,media:${JSON.stringify(p.media)}` : '';
+    return `  {id:${i+1},e:${JSON.stringify(p.e||'💊')},n:${JSON.stringify(p.n)},c:${JSON.stringify(p.c)},cl:${JSON.stringify(p.cl)},p:${JSON.stringify(p.p)},b:${JSON.stringify(p.b||'')},was:${JSON.stringify(p.was||'')},desc:${JSON.stringify(p.desc||'')},d:[${det}]${img}${media}}`;
   });
   return `const prods = [\n${lines.join(',\n')}\n];`;
 }
@@ -500,6 +871,18 @@ function buildProductsCode() {
 function updateLinkStatus(linked, name) {
   document.getElementById('statusDot').className = 'site-status-dot' + (linked ? ' linked' : '');
   document.getElementById('statusText').textContent = linked ? `Linked: ${name}` : 'No website linked';
+  document.getElementById('resetLinkBtn').style.display = linked ? 'block' : 'none';
+}
+
+function resetWebsiteLink() {
+  websiteDirHandle = null;
+  websiteFileHandle = null;
+  setStoredHandle(null);
+  updateLinkStatus(false, '');
+  document.getElementById('linkBtn').style.display = 'block';
+  document.getElementById('restoreBtn').style.display = 'none';
+  showToast('Link reset. Please link a folder again.');
+  setStatus('info', 'Website link disconnected.');
 }
 function setStatus(type, msg) {
   const el = document.getElementById('publishStatus');
@@ -509,9 +892,17 @@ function setStatus(type, msg) {
 // ── FORM ───────────────────────────────────────────────────────────────
 
 function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='manual')||(i===1&&tab==='csv')));
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => t.classList.remove('active'));
+  if (tab === 'manual') tabs[0]?.classList.add('active');
+  if (tab === 'categories') tabs[1]?.classList.add('active');
+  if (tab === 'services') tabs[2]?.classList.add('active');
+  if (tab === 'settings') tabs[3]?.classList.add('active');
+  
   document.getElementById('manualSection').classList.toggle('active', tab==='manual');
-  document.getElementById('csvSection').classList.toggle('active', tab==='csv');
+  document.getElementById('categoriesSection').classList.toggle('active', tab==='categories');
+  document.getElementById('servicesSection').classList.toggle('active', tab==='services');
+  document.getElementById('settingsSection').classList.toggle('active', tab==='settings');
 }
 
 function selectBadge(val) {
@@ -530,29 +921,32 @@ function saveProduct() {
   const name=document.getElementById('fName').value.trim(), cat=document.getElementById('fCat').value, price=document.getElementById('fPrice').value.trim();
   if (!name||!cat||!price) { showToast('⚠ Name, category and price required'); return; }
   const editId = document.getElementById('editId').value;
+  const mediaLines = document.getElementById('fMediaUrls').value.split('\n').map(l=>l.trim()).filter(l=>l);
   const prod = {
-    id: editId?parseInt(editId):nextId++, n:name, c:cat, cl:catLabels[cat]||cat,
+    id: editId?parseInt(editId):nextId++, n:name, c:cat, cl:(categories.find(c=>c.id===cat)?.label||cat),
     p: price.startsWith('€')?price:'€'+price,
     was: document.getElementById('fWas').value.trim()?'€'+document.getElementById('fWas').value.trim().replace('€',''):'',
     b: document.getElementById('fBadge').value,
     desc: document.getElementById('fDesc').value.trim(),
-    d: getDetails(), img: resolvedImg(), e: getCatEmoji(cat)
+    d: getDetails(), img: resolvedImg(), media: mediaLines, e: getCatEmoji(cat)
   };
   if (editId) { const idx=products.findIndex(p=>p.id===parseInt(editId)); if(idx!==-1)products[idx]=prod; showToast('✓ Product updated!'); }
   else { products.push(prod); showToast('✓ Product added!'); }
-  resetForm(); renderList(); updateStats();
+  resetForm(); renderCategories(); renderList(); updateStats();
 }
 
 function getCatEmoji(cat) {
-  return {vitamins:'💊',skincare:'🧴',baby:'🍼',pain:'💪',cold:'🤧',digestive:'🌿',allergy:'🌸',diabetes:'🩺',eyecare:'👁️',dental:'🦷',other:'📦'}[cat]||'📦';
+  const c = categories.find(x=>x.id===cat);
+  return c ? c.emoji : '📦';
 }
 
 function resetForm() {
-  ['fName','fPrice','fWas','fDesc','editId','fImgUrl'].forEach(id=>document.getElementById(id).value='');
+  ['fName','fPrice','fWas','fDesc','editId','fImgUrl','fMediaUrls'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('fCat').value=''; selectBadge(''); clearImage();
   document.querySelectorAll('.dlabel,.dvalue').forEach(el=>el.value='');
   document.getElementById('formTitle').textContent='➕ Add Product';
   document.getElementById('cancelEditBtn').style.display='none';
+  renderMediaPreviews();
 }
 function cancelEdit() { resetForm(); }
 
@@ -565,6 +959,8 @@ function editProduct(id) {
   document.getElementById('fPrice').value=p.p.replace('€','');
   document.getElementById('fWas').value=p.was?p.was.replace('€',''):'';
   document.getElementById('fDesc').value=p.desc||'';
+  document.getElementById('fMediaUrls').value=(p.media||[]).join('\n');
+  renderMediaPreviews();
   selectBadge(p.b||'');
   const L=document.querySelectorAll('.dlabel'),V=document.querySelectorAll('.dvalue');
   (p.d||[]).forEach((d,i)=>{if(L[i]){L[i].value=d.l;V[i].value=d.v;}});
@@ -589,7 +985,7 @@ function editProduct(id) {
 
 function deleteProduct(id) {
   if (!confirm('Delete this product?')) return;
-  products=products.filter(p=>p.id!==id); renderList(); updateStats(); showToast('🗑 Removed');
+  products=products.filter(p=>p.id!==id); renderCategories(); renderList(); updateStats(); showToast('🗑 Removed');
 }
 function filterList(q) { filterQ=q.toLowerCase(); renderList(); }
 
@@ -608,6 +1004,41 @@ function renderList() {
     </tr>`).join('');
 }
 
+function renderServices() {
+  const ui = document.getElementById('serviceListUI');
+  ui.innerHTML = services.map((s,i) => `
+    <div style="display:flex; padding:0.5rem 1rem; border-bottom:1px solid var(--border); align-items:center; gap:1rem; background:${i%2===0?'#fff':'var(--bg)'}">
+      <div style="font-size:1.2rem; width:30px; text-align:center;">${s.icon||'✨'}</div>
+      <div style="flex:1;">
+        <div style="font-weight:600; font-size:0.85rem;">${s.name}</div>
+        <div style="font-size:0.75rem; color:var(--mid);">${s.desc}</div>
+      </div>
+      <button onclick="removeService(${i})" style="background:none; border:none; color:#d93025; cursor:pointer; font-size:0.8rem; margin-left:0.5rem;">✕</button>
+    </div>
+  `).join('');
+}
+
+function addService() {
+  const n = document.getElementById('newSvcName').value.trim();
+  const e = document.getElementById('newSvcEmoji').value.trim();
+  const d = document.getElementById('newSvcDesc').value.trim();
+  if(!n) return showToast('⚠️ Enter a service name');
+  services.push({icon: e||'✨', name: n, desc: d});
+  document.getElementById('newSvcName').value = '';
+  document.getElementById('newSvcEmoji').value = '';
+  document.getElementById('newSvcDesc').value = '';
+  renderServices();
+  showToast('✅ Service added! Publish to go live.');
+}
+
+function removeService(idx) {
+  if(!confirm('Delete this service?')) return;
+  services.splice(idx,1);
+  renderServices();
+  showToast('🗑 Service removed');
+}
+
+
 function updateStats() {
   document.getElementById('statTotal').textContent=products.length;
   document.getElementById('statCats').textContent=new Set(products.map(p=>p.c)).size;
@@ -617,10 +1048,6 @@ function updateStats() {
 
 // ── CSV ────────────────────────────────────────────────────────────────
 
-function handleCSV(input) {
-  const file=input.files[0]; if(!file) return;
-  const r=new FileReader(); r.onload=(e)=>{document.getElementById('csvText').value=e.target.result;showToast('File loaded — click Import');}; r.readAsText(file);
-}
 
 function parseCSVLine(line) {
   const result=[]; let cur=''; let inQ=false;
@@ -633,37 +1060,181 @@ function parseCSVLine(line) {
   result.push(cur.trim()); return result;
 }
 
+
+async function handleCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.name.endsWith('.xlsx')) {
+    if (typeof ExcelJS === 'undefined') { showToast('⚠ Excel tools loading...'); return; }
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(await file.arrayBuffer());
+    const worksheet = workbook.worksheets[0];
+    let csv = '';
+    worksheet.eachRow((row, rowNumber) => {
+      // ExcelJS rows are 1-indexed and the first element (index 0) is empty
+      const values = row.values.slice(1).map(v => v ? v.toString() : '');
+      // Format as CSV line
+      csv += values.map(v => `"${v.replace(/"/g, '""')}"`).join(',') + '\n';
+    });
+    document.getElementById('csvText').value = csv;
+    showToast('✓ Excel file loaded');
+  } else {
+    const reader = new FileReader();
+    reader.onload = function(e) { document.getElementById('csvText').value = e.target.result; showToast('✓ CSV file loaded'); };
+    reader.readAsText(file);
+  }
+}
+
+async function downloadTemplate() {
+  if (typeof ExcelJS === 'undefined') { showToast('⚠ Excel tools not loaded'); return; }
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Template');
+  ws.properties.defaultRowHeight = 45;
+  ws.views = [{ showGridLines: false }];
+  
+  ws.columns = [
+    { header: 'Name', key: 'name', width: 40 },
+    { header: 'Category', key: 'cat', width: 40 },
+    { header: 'Price', key: 'price', width: 40 },
+    { header: 'Was Price', key: 'was', width: 40 },
+    { header: 'Description', key: 'desc', width: 40 },
+    { header: 'Badge', key: 'badge', width: 40 }
+  ];
+  
+  for (let i = 1; i <= 6; i++) ws.getColumn(i).font = { name: 'Cascadia Code SemiBold' };
+  ws.getColumn(3).numFmt = '€#,##0.00';
+  ws.getColumn(4).numFmt = '€#,##0.00';
+
+  const headerRow = ws.getRow(1);
+  headerRow.height = 30;
+  headerRow.eachCell((cell, colNumber) => {
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF66ade3' } };
+    cell.font = { name: 'Cascadia Code SemiBold', color: { argb: 'FFFFFFFF' }, bold: true, size: 14 };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    cell.border = { 
+      right: { style: 'thick', color: { argb: 'FFFFFFFF' } }
+    };
+  });
+
+  for (let i = 7; i <= 16384; i++) {
+    ws.getColumn(i).hidden = true;
+  }
+
+  ws.addRow(['Vitamin D3 1000IU', 'vitamins', 8.99, null, 'Great for immune support 90 caps', 'new']);
+  ws.addRow(['Nurofen Cold & Flu', 'cold', 7.99, 9.99, 'Fast relief from cold and flu', 'sale']);
+  ws.addRow(['Sudocrem 400g', 'baby', 6.99, null, null, 'none']);
+
+  for (let i = 2; i <= 2000; i++) {
+    const r = ws.getRow(i);
+    r.height = 50;
+    r.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    for(let c=1; c<=6; c++) {
+      const cell = r.getCell(c);
+      cell.border = { right: { style: 'thick', color: { argb: 'FFFFFFFF' } } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F7FA' } };
+    }
+  }
+
+  const catList = '"' + categories.map(c => c.label.replace(/,/g, '')).join(',') + '"';
+  for(let i=2; i<=2000; i++) {
+    ws.getCell('B'+i).dataValidation = { type: 'list', allowBlank: true, formulae: [catList], showErrorMessage: false };
+    ws.getCell('F'+i).dataValidation = { type: 'list', allowBlank: true, formulae: ['"none,new,sale"'] };
+  }
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = 'belarmine-products-template.xlsx';
+  a.click();
+}
+
+async function exportCSV() {
+  if (!products.length){showToast('⚠ No products to export');return;}
+  if (typeof ExcelJS === 'undefined') { showToast('⚠ Excel tools not loaded'); return; }
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Products');
+  ws.properties.defaultRowHeight = 45;
+  ws.views = [{ showGridLines: false }];
+  
+  ws.columns = [
+    { header: 'Name', key: 'name', width: 40 },
+    { header: 'Category', key: 'cat', width: 40 },
+    { header: 'Price', key: 'price', width: 40 },
+    { header: 'Was Price', key: 'was', width: 40 },
+    { header: 'Description', key: 'desc', width: 40 },
+    { header: 'Badge', key: 'badge', width: 40 }
+  ];
+  
+  for (let i = 1; i <= 6; i++) ws.getColumn(i).font = { name: 'Cascadia Code SemiBold' };
+  ws.getColumn(3).numFmt = '€#,##0.00';
+  ws.getColumn(4).numFmt = '€#,##0.00';
+
+  const headerRow = ws.getRow(1);
+  headerRow.height = 30;
+  headerRow.eachCell((cell, colNumber) => {
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF66ade3' } };
+    cell.font = { name: 'Cascadia Code SemiBold', color: { argb: 'FFFFFFFF' }, bold: true, size: 14 };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    cell.border = { 
+      right: { style: 'thick', color: { argb: 'FFFFFFFF' } }
+    };
+  });
+
+  for (let i = 7; i <= 16384; i++) {
+    ws.getColumn(i).hidden = true;
+  }
+
+  products.forEach(p => {
+    const pNum = parseFloat(p.p.replace('€',''));
+    const wNum = p.was ? parseFloat(p.was.replace('€','')) : null;
+    ws.addRow([p.n, p.c, isNaN(pNum)?p.p:pNum, isNaN(wNum)?p.was:wNum, p.desc, p.b || 'none']);
+  });
+
+  for (let i = 2; i <= 2000; i++) {
+    const r = ws.getRow(i);
+    r.height = 50;
+    r.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    for(let c=1; c<=6; c++) {
+      const cell = r.getCell(c);
+      cell.border = { right: { style: 'thick', color: { argb: 'FFFFFFFF' } } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F7FA' } };
+    }
+  }
+
+  const catList = '"' + categories.map(c => c.label.replace(/,/g, '')).join(',') + '"';
+  for(let i=2; i<=2000; i++) {
+    ws.getCell('B'+i).dataValidation = { type: 'list', allowBlank: true, formulae: [catList], showErrorMessage: false };
+    ws.getCell('F'+i).dataValidation = { type: 'list', allowBlank: true, formulae: ['"none,new,sale"'] };
+  }
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = 'belarmine-products.xlsx';
+  a.click();
+}
+
 function importCSV() {
   const raw=document.getElementById('csvText').value.trim(); if (!raw){showToast('⚠ Nothing to import');return;}
   const lines=raw.split('\n').filter(l=>l.trim()); let added=0,skipped=0;
   lines.forEach(line=>{
     const parts=parseCSVLine(line); if(parts.length<3){skipped++;return;}
-    const [name,cat,price,was,desc,badge,imgUrl]=parts;
+    const [name,cat,price,was,desc,badge]=parts;
     if (!name||!cat||!price||name.toLowerCase()==='name'){skipped++;return;}
-    const cc=Object.keys(catLabels).find(k=>k===cat.toLowerCase()||catLabels[k].toLowerCase()===cat.toLowerCase())||'other';
-    const cleanImg=(imgUrl||'').trim();
-    products.push({id:nextId++,n:name,c:cc,cl:catLabels[cc]||cc,p:price.startsWith('€')?price:'€'+price,was:was?(was.startsWith('€')?was:'€'+was):'',b:['new','sale'].includes((badge||'').toLowerCase().trim())?badge.toLowerCase().trim():'',desc:desc||'',d:[],img:cleanImg,e:getCatEmoji(cc)});
+    let catObj = categories.find(c => c.id === cat.toLowerCase() || c.label.toLowerCase() === cat.toLowerCase());
+    if (!catObj) {
+      const newId = cat.toLowerCase().replace(/[^a-z0-9]/g, '');
+      catObj = { id: newId || 'other', label: cat, emoji: '📦' };
+      if (newId) categories.push(catObj);
+    }
+    const cc = catObj.id;
+    products.push({id:nextId++,n:name,c:cc,cl:catObj.label,p:price.startsWith('€')?price:'€'+price,was:was?(was.startsWith('€')?was:'€'+was):'',b:['new','sale'].includes((badge||'').toLowerCase().trim())?badge.toLowerCase().trim():'',desc:desc||'',d:[],img:'',e:getCatEmoji(cc)});
     added++;
   });
-  renderList(); updateStats(); document.getElementById('csvText').value='';
+  renderCategories(); renderList(); updateStats(); document.getElementById('csvText').value='';
   showToast(`✓ Imported ${added} products${skipped?` (${skipped} skipped)`:''}`);
 }
 
-function downloadTemplate() {
-  const csv='Name,Category,Price,Was Price,Description,Badge,Image URL\n'+
-    'Vitamin D3 1000IU,vitamins,8.99,,Great for immune support 90 caps,new,https://example.com/vitd3.jpg\n'+
-    'Nurofen Cold & Flu,cold,7.99,9.99,Fast relief from cold and flu,sale,\n'+
-    'Sudocrem 400g,baby,6.99,,,, ';
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='belarmine-products-template.csv'; a.click();
-}
-
-function exportCSV() {
-  if (!products.length){showToast('⚠ No products to export');return;}
-  const rows=['Name,Category,Price,Was Price,Description,Badge,Image URL'];
-  products.forEach(p=>rows.push(`"${p.n}","${p.cl}","${p.p}","${p.was||''}","${(p.desc||'').replace(/"/g,'""')}","${p.b||''}","${p.img&&p.img.startsWith('http')?p.img:''}"`));
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'})); a.download='belarmine-products-backup.csv'; a.click();
-  showToast('⬇ CSV backup downloaded');
-}
 
 function showToast(msg) {
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
@@ -675,7 +1246,90 @@ if (!('showOpenFilePicker' in window)) {
   document.getElementById('publishStatus').textContent='⚠ Use Google Chrome or Microsoft Edge for the publish feature.';
 }
 
-renderList(); updateStats();
+// ── INDEXEDDB PERSISTENCE ──────────────────────────────────────────────
+const DB_NAME = 'belarmineAdminDB';
+function setStoredHandle(handle) {
+  const req = indexedDB.open(DB_NAME, 1);
+  req.onupgradeneeded = e => e.target.result.createObjectStore('store');
+  req.onsuccess = e => e.target.result.transaction('store', 'readwrite').objectStore('store').put(handle, 'websiteHandle');
+}
+function getStoredHandle(cb) {
+  const req = indexedDB.open(DB_NAME, 1);
+  req.onupgradeneeded = e => e.target.result.createObjectStore('store');
+  req.onsuccess = e => {
+    const tx = e.target.result.transaction('store', 'readonly');
+    const getReq = tx.objectStore('store').get('websiteHandle');
+    getReq.onsuccess = () => cb(getReq.result);
+  };
+}
+
+async function restoreWebsite() {
+  if (!websiteDirHandle) return;
+  try {
+    if (websiteDirHandle.kind === 'file') {
+      alert('You previously linked just the index.html file. Please click "Link Website Folder" to upgrade to the new folder mode.');
+      resetWebsiteLink();
+      return;
+    }
+    let perm = await websiteDirHandle.queryPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') perm = await websiteDirHandle.requestPermission({ mode: 'readwrite' });
+    if (perm === 'granted') {
+      websiteFileHandle = await websiteDirHandle.getFileHandle('index.html');
+      updateLinkStatus(true, websiteDirHandle.name);
+      document.getElementById('linkBtn').style.display = 'none';
+      document.getElementById('restoreBtn').style.display = 'none';
+      showToast(`✓ Link restored to ${websiteDirHandle.name}`);
+      setStatus('ok', `✓ Linked to folder "${websiteDirHandle.name}" — click Update index.html to publish.`);
+      
+      const file = await websiteFileHandle.getFile();
+      const html = await file.text();
+      const s = '// ===== PRODUCTS_START =====', e = '// ===== PRODUCTS_END =====';
+      const cs = '// ===== CATEGORIES_START =====', ce = '// ===== CATEGORIES_END =====';
+      const ss = '// ===== SETTINGS_START =====', se = '// ===== SETTINGS_END =====';
+      if (html.includes(ss) && html.includes(se)) {
+        const setCode = html.slice(html.indexOf(ss)+ss.length, html.indexOf(se));
+        const setCodeClean = setCode.replace('const siteSettings =', '').trim().replace(/;$/, '');
+        const loadedSet = new Function(`return ${setCodeClean};`)();
+        if (loadedSet) { siteSettings = loadedSet; renderSettings(); }
+      }
+      if (html.includes(cs) && html.includes(ce)) {
+        const catCode = html.slice(html.indexOf(cs)+cs.length, html.indexOf(ce));
+        const catArrayCode = catCode.replace('const categories =', '').trim().replace(/;$/, '');
+        const loadedCats = new Function(`return ${catArrayCode};`)();
+        if (Array.isArray(loadedCats)) { categories = loadedCats; renderCategories(); }
+      }
+      if (html.includes(s) && html.includes(e)) {
+        const code = html.slice(html.indexOf(s)+s.length, html.indexOf(e));
+        const arrayCode = code.replace('const prods =', '').trim().replace(/;$/, '');
+        const loadedProds = new Function(`return ${arrayCode};`)();
+        if (Array.isArray(loadedProds)) {
+          products = loadedProds;
+          nextId = Math.max(0, ...products.map(p => p.id || 0)) + 1;
+          renderCategories(); renderList(); updateStats();
+          if (products.length > 0) showToast(`✓ Loaded ${products.length} existing products`);
+        }
+      }
+    }
+  } catch(e) { setStatus('err', 'Could not restore link: ' + e.message); }
+}
+
+getStoredHandle(handle => {
+  if (handle) {
+    websiteDirHandle = handle;
+    document.getElementById('linkBtn').style.display = 'none';
+    document.getElementById('restoreBtn').style.display = 'block';
+    document.getElementById('resetLinkBtn').style.display = 'block';
+    setStatus('info', `Previous link found. Click "Restore Folder Link" in the top bar.`);
+  }
+});
+
+renderCategories(); renderServices(); renderSettings(); renderList(); updateStats();
 </script>
+
+<div id="fullscreenPreview" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; cursor:pointer;" onclick="this.style.display='none'">
+  <img id="fullscreenImg" src="" style="max-width:90%; max-height:90%; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.5); object-fit:contain;">
+  <div style="position:absolute; top:20px; right:25px; color:white; font-size:30px; font-weight:bold;">&times;</div>
+</div>
+
 </body>
 </html>
