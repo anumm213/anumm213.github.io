@@ -89,6 +89,29 @@
   .nav-cta { background: var(--blue) !important; color: #fff !important; }
   .nav-cta:hover { background: var(--blue-dark) !important; color: #fff !important; }
 
+  .menu-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 24px;
+    height: 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 300;
+  }
+  .menu-btn span {
+    width: 100%;
+    height: 2px;
+    background: var(--blue-dark);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+  .menu-btn.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+  .menu-btn.active span:nth-child(2) { opacity: 0; }
+  .menu-btn.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
   .hero {
     background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 60%, var(--blue-mid) 100%);
     padding: 5.5rem 8vw 4.5rem; position: relative; overflow: hidden;
@@ -227,12 +250,18 @@
     .hero{grid-template-columns:1fr}
     .hero-right{display:none}
     .contact-grid{grid-template-columns:1fr;gap:2rem}
-    .nav-links{display:none}
-    .nav-search{flex:1}
-    nav{gap:1rem}
-    .info-item{padding:.8rem 1.1rem;font-size:.76rem}
     .products-section,.services-section,.contact-section{padding:4rem 5vw}
     .products-controls { flex-direction: column; align-items: stretch; }
+    .menu-btn { display: flex; }
+    .nav-links {
+      position: fixed; top: 70px; left: 0; width: 100%; height: calc(100vh - 70px);
+      background: var(--white); flex-direction: column; align-items: center; 
+      padding-top: 3rem; gap: 2rem; transform: translateX(100%); transition: transform 0.3s ease;
+      z-index: 250; display: flex !important;
+    }
+    .nav-links.active { transform: translateX(0); }
+    .nav-links li { width: 100%; text-align: center; }
+    .nav-links a { font-size: 1.4rem; width: 100%; display: block; padding: 1rem; }
     .filter-tabs { flex-wrap: nowrap; overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; padding-bottom: 4px; width: 100%; }
     .filter-tabs::-webkit-scrollbar { display: none; }
     .filter-tab { flex-shrink: 0; }
@@ -288,15 +317,20 @@
   <a class="nav-logo" href="#">Belarmine <span>Ph</span></a>
   <div class="nav-search">
     <span class="search-icon">🔍</span>
-    <input type="text" id="navInput" placeholder="Search products" autocomplete="off">
+    <input type="text" id="navInput" placeholder="Search products & services…" autocomplete="off">
     <div class="nav-dropdown" id="navDrop"></div>
   </div>
-  <ul class="nav-links">
+  <ul class="nav-links" id="navLinks">
     <li><a href="#services">Services</a></li>
     <li><a href="#products">Products</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="tel:0112950819" class="nav-cta">📞 Call</a></li>
   </ul>
+  <button class="menu-btn" id="menuBtn">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
 
 <section class="hero">
@@ -769,6 +803,21 @@ window.addEventListener('scroll', () => {
     wingSpan: 30,
     speedLimit: 5
   });
+// Mobile Menu Toggle
+const menuBtn = document.getElementById('menuBtn');
+const navLinks = document.getElementById('navLinks');
+if (menuBtn && navLinks) {
+  menuBtn.addEventListener('click', () => {
+    menuBtn.classList.toggle('active');
+    navLinks.classList.toggle('active');
+  });
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      menuBtn.classList.remove('active');
+      navLinks.classList.remove('active');
+    });
+  });
+}
 </script>
 </body>
 </html>
