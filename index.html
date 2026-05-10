@@ -240,6 +240,7 @@
   .map-tab:hover:not(.active) { background: var(--blue-light); color: var(--blue); }
   #shopImg:fullscreen { object-fit: contain !important; background: #000; }
   #shopImg:-webkit-full-screen { object-fit: contain !important; background: #000; }
+  .map-wrapper { scroll-margin-top: 110px; }
 
   footer { background: var(--blue-dark); color: rgba(255,255,255,0.65); padding: 2.3rem 8vw; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
   .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: #fff; }
@@ -333,6 +334,7 @@
     <li><a href="#">Home</a></li>
     <li><a href="#services">Services</a></li>
     <li><a href="#products">Products</a></li>
+    <li><a href="#location">Location</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="tel:0112950819" class="nav-cta">📞 Call</a></li>
   </ul>
@@ -415,7 +417,7 @@
       <div class="contact-block"><div class="c-label">Social</div><div class="c-value"><a href="https://www.instagram.com/belarminepharmacy1/" target="_blank">@belarminepharmacy1</a> on Instagram</div></div>
       <a href="tel:0112950819" class="btn-white" style="background:var(--blue-dark);color:#fff;display:inline-block;margin-top:0.5rem;">📞 Call the Pharmacy</a>
     </div>
-    <div>
+    <div class="map-wrapper" id="location">
       <div class="map-tabs">
         <button class="map-tab active" onclick="switchMap('shop', this)">🏪 Front of Shop</button>
         <button class="map-tab" onclick="switchMap('map', this)">🗺️ Map View</button>
