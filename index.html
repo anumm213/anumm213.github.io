@@ -234,6 +234,12 @@
   .hours-tbl td:last-child { text-align: right; font-weight: 700; color: var(--slate); }
   .map-box { border-radius: 10px; overflow: hidden; height: 310px; border: 1px solid var(--border); box-shadow: var(--shadow); }
   .map-box iframe { width: 100%; height: 100%; border: none; display: block; }
+  .map-tabs { display: flex; gap: 0; margin-bottom: 0.6rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); width: fit-content; }
+  .map-tab { padding: 0.42rem 1.1rem; font-size: 0.8rem; font-weight: 700; font-family: 'Nunito', sans-serif; background: var(--white); color: var(--mid); border: none; cursor: pointer; transition: all 0.18s; }
+  .map-tab.active { background: var(--blue); color: #fff; }
+  .map-tab:hover:not(.active) { background: var(--blue-light); color: var(--blue); }
+  #shopImg:fullscreen { object-fit: contain !important; background: #000; }
+  #shopImg:-webkit-full-screen { object-fit: contain !important; background: #000; }
 
   footer { background: var(--blue-dark); color: rgba(255,255,255,0.65); padding: 2.3rem 8vw; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
   .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: #fff; }
@@ -411,10 +417,17 @@
       <a href="tel:0112950819" class="btn-white" style="background:var(--blue-dark);color:#fff;display:inline-block;margin-top:0.5rem;">📞 Call the Pharmacy</a>
     </div>
     <div>
-      <div class="map-box">
-        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2387.0!2d-6.2236!3d53.2492!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zBelarmine+Pharmacy!5e0!3m2!1sen!2sie!4v1" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map"></iframe>
+      <div class="map-tabs">
+        <button class="map-tab active" onclick="switchMap('shop', this)">🏪 Front of Shop</button>
+        <button class="map-tab" onclick="switchMap('map', this)">🗺️ Map View</button>
+        <button class="map-tab" onclick="switchMap('street', this)">🚶 Street View</button>
       </div>
-      <p style="font-size:0.77rem;color:var(--mid);margin-top:0.65rem;">📍 8 minutes from Sandyford Luas stop</p>
+      <div class="map-box">
+        <img id="shopImg" src="belarmine ph.png" alt="Front of Belarmine Pharmacy" style="width:100%;height:100%;object-fit:cover;display:block;cursor:pointer;" onclick="this.requestFullscreen()" title="Click for full screen">
+        <iframe id="mapIframe" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2387.0!2d-6.2236!3d53.2492!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zBelarmine+Pharmacy!5e0!3m2!1sen!2sie!4v1" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map" style="display:none;"></iframe>
+        <iframe id="streetIframe" src="https://www.google.com/maps/embed?pb=!4v1778445330770!6m8!1m7!1s-xd4wSzpvLThv4aSppfAGA!2m2!1d53.26086455115535!2d-6.221269631640754!3f56.78!4f0!5f0.7820865974627469" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Street View" style="display:none;"></iframe>
+      </div>
+
     </div>
   </div>
 </section>
@@ -848,6 +861,14 @@ window.addEventListener('scroll', () => {
     midtoneColor: 0x5278c3,
     blurFactor: 0.3
   });
+// Map / Street View Toggle
+function switchMap(view, btn) {
+  document.getElementById('shopImg').style.display = view === 'shop' ? 'block' : 'none';
+  document.getElementById('mapIframe').style.display = view === 'map' ? 'block' : 'none';
+  document.getElementById('streetIframe').style.display = view === 'street' ? 'block' : 'none';
+  btn.closest('.map-tabs').querySelectorAll('.map-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
 // Mobile Menu Toggle
 const menuBtn = document.getElementById('menuBtn');
 const navLinks = document.getElementById('navLinks');
