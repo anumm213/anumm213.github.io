@@ -131,8 +131,9 @@
   .section-sub { font-size: 0.93rem; color: var(--mid); line-height: 1.7; max-width: 560px; }
 
   .products-controls { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
-  .filter-tabs { display: flex; gap: 0.45rem; flex-wrap: wrap; }
-  .filter-tab { padding: 0.44rem 1.05rem; border-radius: 6px; font-family: 'Nunito', sans-serif; font-size: 0.81rem; font-weight: 700; border: 1px solid var(--border); background: var(--white); color: var(--mid); cursor: pointer; transition: all 0.18s; }
+  .filter-tabs { display: flex; gap: 0.45rem; flex-wrap: nowrap; overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; padding-bottom: 2px; }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .filter-tab { flex-shrink: 0; padding: 0.44rem 1.05rem; border-radius: 6px; font-family: 'Nunito', sans-serif; font-size: 0.81rem; font-weight: 700; border: 1px solid var(--border); background: var(--white); color: var(--mid); cursor: pointer; transition: all 0.18s; }
   .filter-tab:hover { border-color: var(--blue); color: var(--blue); }
   .filter-tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
   .prod-search { margin-left: auto; position: relative; }
