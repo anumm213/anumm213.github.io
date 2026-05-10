@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belarmine Pharmacy — Product Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #375a8a; --blue-dark: #1b2d48; --blue-mid: #5b7fae;
+    --blue-light: #eef3f8; --blue-pale: #f5f8fa; --white: #ffffff;
+    --slate: #2c3e50; --mid: #6b7a99; --border: #e1e6ed;
+    --success: #1e8e3e; --success-bg: #e6f4ea; --danger: #c53030; --danger-bg: #fff5f5;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Nunito', sans-serif; background: var(--blue-pale); color: var(--slate); min-height: 100vh; }
+
+  header {
+    background: var(--blue-dark); padding: 0.85rem 1.25rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
+  }
+  .logo { font-family: 'Playfair Display', serif; color: #fff; font-size: 1.1rem; white-space: nowrap; }
+  .logo span {
+    font-family: 'Nunito', sans-serif; font-size: 0.6rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    background: rgba(255,255,255,0.15); padding: 0.12rem 0.4rem; border-radius: 3px;
+    margin-left: 0.35rem; vertical-align: middle; color: rgba(255,255,255,0.9);
+  }
+  .header-sub { color: rgba(255,255,255,0.55); font-size: 0.72rem; font-weight: 600; }
+
+  .site-status {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 0.5rem 0.85rem; flex-shrink: 0;
+  }
+  .site-status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+  .site-status-dot.linked { background: #4ade80; box-shadow: 0 0 0 3px rgba(74,222,128,0.3); }
+  .site-status-text { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.8); }
+  .btn-link-site {
+    padding: 0.38rem 0.8rem; background: var(--blue-mid); color: #fff;
+    border: none; border-radius: 5px; font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem; font-weight: 800; cursor: pointer; transition: background 0.2s; white-space: nowrap;
+  }
+  .btn-link-site:hover { background: #375a8a; }
+
+  .layout {
+    display: grid; grid-template-columns: 380px 1fr;
+    gap: 1.25rem; padding: 1.25rem 1.5rem;
+    max-width: 1400px; margin: 0 auto;
+  }
+
+  .panel { background: var(--white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .panel-head {
+    background: var(--blue-light); border-bottom: 1px solid var(--border);
+    padding: 0.85rem 1.1rem; display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title { font-size: 0.82rem; font-weight: 800; color: var(--blue-dark); text-transform: uppercase; letter-spacing: 0.08em; }
+  .panel-body { padding: 1.1rem; }
+
+  .tabs { display: flex; gap: 0.45rem; margin-bottom: 1.1rem; }
+  .tab {
+    flex: 1; padding: 0.52rem; border-radius: 6px; border: 1px solid var(--border);
+    font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700;
+    cursor: pointer; background: var(--white); color: var(--mid); transition: all 0.15s; text-align: center;
+  }
+  .tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .form-section { display: none; }
+  .form-section.active { display: block; }
+
+  .field { margin-bottom: 0.9rem; }
+  .field label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.09em; color: var(--blue); margin-bottom: 0.32rem; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 0.55rem 0.8rem; border: 1px solid var(--border); border-radius: 6px;
+    font-family: 'Nunito', sans-serif; font-size: 0.86rem; color: var(--slate);
+    background: var(--white); outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(55,90,138,0.1); }
+  .field textarea { resize: vertical; min-height: 75px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+
+  .img-url-row { display: flex; gap: 0.5rem; align-items: flex-start; }
+  .img-url-row input { flex: 1; }
+  .btn-preview-url {
+    padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 6px;
+    font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 700;
+    background: var(--blue-light); color: var(--blue-dark); cursor: pointer;
+    white-space: nowrap; transition: all 0.15s; flex-shrink: 0;
+  }
+  .btn-preview-url:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .url-preview-img {
+    width: 100%; height: 100px; object-fit: contain; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--blue-pale);
+    display: none; margin-top: 0.5rem;
+  }
+
+  .img-or-divider {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin: 0.75rem 0; color: var(--mid); font-size: 0.73rem; font-weight: 700;
+  }
+  .img-or-divider::before, .img-or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .img-upload-box {
+    border: 2px dashed var(--border); border-radius: 8px; padding: 1.1rem;
+    text-align: center; cursor: pointer; transition: all 0.2s; background: var(--blue-pale); position: relative;
+  }
+  .img-upload-box:hover { border-color: var(--blue); background: var(--blue-light); }
+  .img-upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .img-upload-box .upload-icon { font-size: 1.6rem; margin-bottom: 0.35rem; display: block; }
+  .img-upload-box p { font-size: 0.75rem; color: var(--mid); font-weight: 600; }
+  .img-preview { width: 100%; height: 120px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border); display: none; background: var(--blue-pale); }
+
+  .badge-row { display: flex; gap: 0.45rem; }
+  .badge-opt {
+    flex: 1; padding: 0.42rem 0.4rem; border: 1px solid var(--border); border-radius: 5px;
+    font-family: 'Nunito', sans-serif; font-size: 0.73rem; font-weight: 700;
+    cursor: pointer; text-align: center; background: var(--white); color: var(--mid); transition: all 0.15s;
+  }
+  .badge-opt.sel-none { background: var(--blue-pale); color: var(--blue-dark); border-color: var(--blue); }
+  .badge-opt.sel-new { background: #1e8e3e; color: #fff; border-color: #1e8e3e; }
+  .badge-opt.sel-sale { background: #c53030; color: #fff; border-color: #c53030; }
+
+  .btn-primary { width: 100%; padding: 0.72rem; background: var(--blue); color: #fff; border: none; border-radius: 7px; font-family: 'Nunito', sans-serif; font-size: 0.88rem; font-weight: 800; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem; }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-secondary { width: 100%; padding: 0.6rem; background: var(--white); color: var(--slate); border: 1px solid var(--border); border-radius: 7px; font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 0.45rem; }
+  .btn-secondary:hover { border-color: var(--blue); color: var(--blue); }
+
+  .csv-drop {
+    border: 2px dashed var(--border); border-radius: 8px; padding: 1.5rem 1rem;
+    text-align: center; cursor: pointer; transition: all 0.2s; background: var(--blue-pale);
+    position: relative; margin-bottom: 0.85rem;
+  }
+  .csv-drop:hover { border-color: var(--blue); background: var(--blue-light); }
+  .csv-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .csv-drop .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+  .csv-drop p { font-size: 0.78rem; color: var(--mid); font-weight: 600; line-height: 1.6; }
+
+  .csv-template { font-size: 0.72rem; color: var(--mid); background: var(--blue-pale); border-radius: 6px; padding: 0.7rem; margin-bottom: 0.85rem; border: 1px solid var(--border); }
+  .csv-template strong { color: var(--slate); display: block; margin-bottom: 0.28rem; font-size: 0.72rem; }
+  .csv-template code { font-size: 0.68rem; color: var(--blue-dark); word-break: break-all; line-height: 1.7; }
+  .col-new { background: rgba(55,90,138,0.12); padding: 0.05rem 0.25rem; border-radius: 3px; font-weight: 700; color: var(--blue); }
+
+  .right-panel { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.65rem; }
+  .stat-card { background: var(--white); border-radius: 10px; border: 1px solid var(--border); padding: 0.85rem 1rem; }
+  .stat-label { font-size: 0.64rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mid); margin-bottom: 0.25rem; }
+  .stat-value { font-size: 1.6rem; font-weight: 800; color: var(--blue-dark); }
+
+  .products-panel { flex: 1; min-width: 0; }
+  .prod-list-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  .search-bar { padding: 0.46rem 0.8rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Nunito', sans-serif; font-size: 0.82rem; color: var(--slate); background: var(--white); outline: none; width: 180px; }
+  .search-bar:focus { border-color: var(--blue); }
+
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 0.4rem; }
+  .prod-table { width: 100%; border-collapse: collapse; min-width: 480px; }
+  .prod-table th { text-align: left; padding: 0.55rem 0.8rem; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.09em; color: var(--mid); border-bottom: 1px solid var(--border); background: var(--blue-pale); white-space: nowrap; }
+  .prod-table td { padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--border); font-size: 0.82rem; vertical-align: middle; }
+  .prod-table tr:last-child td { border-bottom: none; }
+  .prod-table tr:hover td { background: var(--blue-pale); }
+  .prod-thumb { width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--border); background: var(--blue-pale); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; overflow: hidden; }
+  .prod-thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .prod-name-col .name { font-weight: 700; color: var(--slate); font-size: 0.84rem; }
+  .prod-name-col .cat { font-size: 0.68rem; color: var(--mid); font-weight: 600; }
+  .badge { font-size: 0.63rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em; padding: 0.14rem 0.42rem; border-radius: 3px; }
+  .badge-new { background: #e6f4ea; color: #1e8e3e; }
+  .badge-sale { background: #fff5f5; color: #c53030; }
+  .price-col { font-weight: 800; color: var(--blue-dark); white-space: nowrap; }
+  .price-was { font-size: 0.7rem; color: var(--mid); text-decoration: line-through; font-weight: 400; display: block; }
+  .action-btns { display: flex; gap: 0.35rem; }
+  .btn-edit, .btn-del { padding: 0.28rem 0.6rem; border-radius: 4px; font-family: 'Nunito', sans-serif; font-size: 0.72rem; font-weight: 700; cursor: pointer; border: 1px solid var(--border); transition: all 0.15s; white-space: nowrap; }
+  .btn-edit { background: var(--white); color: var(--blue); }
+  .btn-edit:hover { background: var(--blue-light); border-color: var(--blue); }
+  .btn-del { background: var(--white); color: var(--danger); }
+  .btn-del:hover { background: var(--danger-bg); border-color: var(--danger); }
+  .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--mid); }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 0.6rem; display: block; }
+  .empty-state p { font-size: 0.85rem; line-height: 1.6; }
+
+  .publish-panel { background: var(--white); border-radius: 12px; border: 2px solid var(--blue); padding: 1.2rem 1.3rem; }
+  .publish-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.65rem; }
+  .publish-title { font-size: 0.92rem; font-weight: 800; color: var(--blue-dark); }
+  .publish-desc { font-size: 0.78rem; color: var(--mid); line-height: 1.6; margin-bottom: 0.85rem; }
+  .publish-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .btn-publish { padding: 0.65rem 1.25rem; border-radius: 7px; font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-weight: 800; cursor: pointer; border: none; background: var(--blue-dark); color: #fff; transition: all 0.2s; display: flex; align-items: center; gap: 0.45rem; }
+  .btn-publish:hover { background: #0f1e30; transform: translateY(-1px); }
+  .btn-publish.success { background: var(--success); }
+  .btn-export-sec { padding: 0.6rem 1rem; border-radius: 7px; font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--slate); transition: all 0.15s; }
+  .btn-export-sec:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+  .publish-status { font-size: 0.76rem; margin-top: 0.65rem; padding: 0.55rem 0.85rem; border-radius: 6px; display: none; font-weight: 700; line-height: 1.5; }
+  .publish-status.ok  { background: var(--success-bg); color: var(--success); display: block; }
+  .publish-status.err { background: var(--danger-bg); color: var(--danger); display: block; }
+  .publish-status.info { background: var(--blue-light); color: var(--blue-dark); display: block; }
+
+  .toast { position: fixed; bottom: 1.5rem; right: 1.25rem; background: var(--blue-dark); color: #fff; padding: 0.7rem 1.15rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700; transform: translateY(20px); opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 1000; max-width: calc(100vw - 2.5rem); }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── MOBILE ── */
+  @media(max-width: 860px) {
+    header { padding: 0.75rem 1rem; }
+    .site-status-text { display: none; }
+    .layout { grid-template-columns: 1fr; padding: 0.9rem; gap: 0.9rem; }
+    .stats-row { grid-template-columns: repeat(2,1fr); gap: 0.55rem; }
+    .stat-value { font-size: 1.35rem; }
+    .field-row { grid-template-columns: 1fr; }
+    .search-bar { width: 130px; font-size: 0.76rem; }
+    .publish-btns { flex-direction: column; }
+    .btn-publish, .btn-export-sec { width: 100%; justify-content: center; text-align: center; }
+    .publish-head { flex-direction: column; align-items: flex-start; }
+  }
+  @media(max-width: 480px) {
+    .logo span { display: none; }
+    .btn-link-site { font-size: 0.67rem; padding: 0.32rem 0.55rem; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Belarmine Pharmacy <span>Admin</span></div>
+    <div class="header-sub" style="margin-top:0.18rem;">Product Manager</div>
+  </div>
+  <div class="site-status" id="siteStatus">
+    <div class="site-status-dot" id="statusDot"></div>
+    <div class="site-status-text" id="statusText">No website linked</div>
+    <button class="btn-link-site" onclick="linkWebsite()">🔗 Link index.html</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- LEFT -->
+  <div>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title" id="formTitle">➕ Add Product</div>
+      </div>
+      <div class="panel-body">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('manual')">✏️ Type It In</button>
+          <button class="tab" onclick="switchTab('csv')">📊 Spreadsheet</button>
+        </div>
+
+        <!-- MANUAL -->
+        <div class="form-section active" id="manualSection">
+          <input type="hidden" id="editId" value="">
+          <div class="field">
+            <label>Product Name *</label>
+            <input type="text" id="fName" placeholder="e.g. Vitamin D3 1000IU">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Category *</label>
+              <select id="fCat">
+                <option value="">Select category…</option>
+                <option value="vitamins">Vitamins & Supplements</option>
+                <option value="skincare">Skincare</option>
+                <option value="baby">Baby & Family</option>
+                <option value="pain">Pain Relief</option>
+                <option value="cold">Cold & Flu</option>
+                <option value="digestive">Digestive Health</option>
+                <option value="allergy">Allergy</option>
+                <option value="diabetes">Diabetes Care</option>
+                <option value="eyecare">Eye Care</option>
+                <option value="dental">Dental</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Price (€) *</label>
+              <input type="text" id="fPrice" placeholder="e.g. 12.99">
+            </div>
+          </div>
+          <div class="field">
+            <label>Was / Original Price (leave blank if no sale)</label>
+            <input type="text" id="fWas" placeholder="e.g. 15.99">
+          </div>
+          <div class="field">
+            <label>Description</label>
+            <textarea id="fDesc" placeholder="Brief description of the product, its benefits, size, etc."></textarea>
+          </div>
+          <div class="field">
+            <label>Badge</label>
+            <div class="badge-row">
+              <div class="badge-opt sel-none" onclick="selectBadge('')" id="badgeNone">None</div>
+              <div class="badge-opt" onclick="selectBadge('new')" id="badgeNew">🟢 New</div>
+              <div class="badge-opt" onclick="selectBadge('sale')" id="badgeSale">🔴 Sale</div>
+            </div>
+            <input type="hidden" id="fBadge" value="">
+          </div>
+          <div class="field">
+            <label>Product Image</label>
+            <!-- URL option -->
+            <div class="img-url-row">
+              <input type="url" id="fImgUrl" placeholder="https://… paste image URL" oninput="onUrlInput()">
+              <button class="btn-preview-url" onclick="previewUrl()">Preview</button>
+            </div>
+            <img class="url-preview-img" id="urlPreview" alt="URL Preview" onerror="this.style.display='none'">
+            <div class="img-or-divider">or upload a file</div>
+            <!-- Upload option -->
+            <div class="img-upload-box" id="uploadBox">
+              <input type="file" id="fImg" accept="image/*" onchange="handleImageUpload(this)">
+              <span class="upload-icon">🖼️</span>
+              <p>Click to upload<br><span style="font-size:0.68rem;color:#aaa;">JPG, PNG, WEBP — max 5MB</span></p>
+            </div>
+            <img class="img-preview" id="imgPreview" alt="Preview">
+            <button class="btn-secondary" id="clearImgBtn" onclick="clearImage()" style="display:none;margin-top:0.4rem;width:auto;padding:0.36rem 0.9rem;font-size:0.73rem;">✕ Remove image</button>
+          </div>
+          <div class="field">
+            <label>Detail Fields — e.g. Size, Strength (up to 3)</label>
+            <div id="detailFields">
+              <div class="field-row" style="margin-bottom:0.45rem"><input type="text" placeholder="Label (e.g. Size)" class="dlabel"><input type="text" placeholder="Value (e.g. 90 Caps)" class="dvalue"></div>
+              <div class="field-row" style="margin-bottom:0.45rem"><input type="text" placeholder="Label" class="dlabel"><input type="text" placeholder="Value" class="dvalue"></div>
+              <div class="field-row"><input type="text" placeholder="Label" class="dlabel"><input type="text" placeholder="Value" class="dvalue"></div>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveProduct()">✓ Save Product</button>
+          <button class="btn-secondary" id="cancelEditBtn" onclick="cancelEdit()" style="display:none;">Cancel Edit</button>
+        </div>
+
+        <!-- CSV -->
+        <div class="form-section" id="csvSection">
+          <div class="csv-template">
+            <strong>📋 Column order (7 columns):</strong>
+            <code>Name, Category, Price, Was Price, Description, Badge, <span class="col-new">Image URL</span></code>
+            <br><br>
+            <strong>Example row:</strong>
+            <code>Vitamin D3, vitamins, 8.99, , Immune support 90 caps, new, https://example.com/vitd3.jpg</code>
+            <br><br>
+            <strong>Tips:</strong>
+            <code>• Leave Image URL blank if no image<br>• Badge options: new / sale / (blank)<br>• Was Price: blank if not on sale</code>
+          </div>
+          <div class="csv-drop">
+            <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(this)">
+            <span class="upload-icon">📊</span>
+            <p>Upload your CSV file<br><span style="font-size:0.68rem;color:#aaa;">CSV accepted</span></p>
+          </div>
+          <p style="font-size:0.76rem;color:var(--mid);text-align:center;margin-bottom:0.65rem;">— or paste CSV text directly —</p>
+          <div class="field">
+            <textarea id="csvText" placeholder="Paste CSV rows here:&#10;Vitamin D3, vitamins, 8.99, , Immune support, new, https://…" style="min-height:110px;font-family:monospace;font-size:0.75rem;"></textarea>
+          </div>
+          <button class="btn-primary" onclick="importCSV()">📥 Import Products</button>
+          <button class="btn-secondary" onclick="downloadTemplate()">⬇ Download Template CSV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Total Products</div><div class="stat-value" id="statTotal">0</div></div>
+      <div class="stat-card"><div class="stat-label">Categories</div><div class="stat-value" id="statCats">0</div></div>
+      <div class="stat-card"><div class="stat-label">With Images</div><div class="stat-value" id="statImgs">0</div></div>
+      <div class="stat-card"><div class="stat-label">On Sale</div><div class="stat-value" id="statSale">0</div></div>
+    </div>
+
+    <div class="panel products-panel">
+      <div class="panel-head prod-list-head">
+        <div class="panel-title">📦 Your Products</div>
+        <input type="text" class="search-bar" placeholder="🔍 Search…" oninput="filterList(this.value)">
+      </div>
+      <div class="table-wrap">
+        <table class="prod-table">
+          <thead><tr><th style="width:40px;"></th><th>Product</th><th>Price</th><th>Badge</th><th>Actions</th></tr></thead>
+          <tbody id="prodTbody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState">
+          <span class="empty-icon">📦</span>
+          <p>No products yet.<br>Add your first product using the form on the left.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="publish-panel">
+      <div class="publish-head">
+        <div class="publish-title">🚀 Publish to Website</div>
+        <div class="publish-btns">
+          <button class="btn-export-sec" onclick="exportCSV()">⬇ Backup as CSV</button>
+          <button class="btn-publish" id="publishBtn" onclick="publishToWebsite()">✦ Update index.html</button>
+        </div>
+      </div>
+      <p class="publish-desc">Click <strong>Link index.html</strong> in the top bar once — the admin remembers your website file. Then click <strong>Update index.html</strong> whenever you change products.</p>
+      <div class="publish-status" id="publishStatus"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let products = [];
+let nextId = 1;
+let filterQ = '';
+let currentImg = null;
+let currentImgUrl = '';
+let websiteFileHandle = null;
+
+const catLabels = {
+  vitamins:'Vitamins & Supplements', skincare:'Skincare', baby:'Baby & Family',
+  pain:'Pain Relief', cold:'Cold & Flu', digestive:'Digestive Health',
+  allergy:'Allergy', diabetes:'Diabetes Care', eyecare:'Eye Care', dental:'Dental', other:'Other'
+};
+
+// ── IMAGE URL ──────────────────────────────────────────────────────────
+
+function onUrlInput() {
+  const url = document.getElementById('fImgUrl').value.trim();
+  if (!url) { document.getElementById('urlPreview').style.display = 'none'; currentImgUrl = ''; }
+}
+
+function previewUrl() {
+  const url = document.getElementById('fImgUrl').value.trim();
+  if (!url) { showToast('⚠ Paste an image URL first'); return; }
+  const img = document.getElementById('urlPreview');
+  img.src = url; img.style.display = 'block';
+  currentImgUrl = url;
+  clearUploadedFile();
+  showToast('✓ Previewing URL image');
+}
+
+function clearUploadedFile() {
+  currentImg = null;
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('uploadBox').style.display = 'block';
+  document.getElementById('clearImgBtn').style.display = 'none';
+  document.getElementById('fImg').value = '';
+}
+
+function handleImageUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  if (file.size > 5*1024*1024) { showToast('Image too large — max 5MB'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentImg = e.target.result; currentImgUrl = '';
+    document.getElementById('fImgUrl').value = '';
+    document.getElementById('urlPreview').style.display = 'none';
+    document.getElementById('imgPreview').src = currentImg;
+    document.getElementById('imgPreview').style.display = 'block';
+    document.getElementById('uploadBox').style.display = 'none';
+    document.getElementById('clearImgBtn').style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImage() {
+  currentImg = null; currentImgUrl = '';
+  document.getElementById('fImgUrl').value = '';
+  document.getElementById('urlPreview').style.display = 'none';
+  clearUploadedFile();
+}
+
+function resolvedImg() { return currentImgUrl || currentImg || ''; }
+
+// ── FILE SYSTEM ────────────────────────────────────────────────────────
+
+async function linkWebsite() {
+  if (!('showOpenFilePicker' in window)) { setStatus('err', '⚠ Use Chrome or Edge for this feature.'); return; }
+  try {
+    const [handle] = await window.showOpenFilePicker({ types: [{ description: 'HTML files', accept: { 'text/html': ['.html'] } }], multiple: false });
+    if (handle.name !== 'index.html') { if (!confirm(`Selected "${handle.name}" — correct file?`)) return; }
+    websiteFileHandle = handle;
+    updateLinkStatus(true, handle.name);
+    showToast(`✓ Linked to ${handle.name}`);
+    setStatus('ok', `✓ Linked to "${handle.name}" — click Update index.html to publish.`);
+  } catch(e) { if (e.name !== 'AbortError') setStatus('err', 'Could not link: ' + e.message); }
+}
+
+async function publishToWebsite() {
+  if (products.length === 0) { showToast('⚠ No products to publish'); return; }
+  if (!websiteFileHandle) { setStatus('info', '👆 Click "Link index.html" in the top bar first.'); return; }
+  let perm = await websiteFileHandle.queryPermission({ mode: 'readwrite' });
+  if (perm !== 'granted') perm = await websiteFileHandle.requestPermission({ mode: 'readwrite' });
+  if (perm !== 'granted') { setStatus('err', '⚠ Write permission denied. Try re-linking the file.'); return; }
+  try {
+    const file = await websiteFileHandle.getFile();
+    let html = await file.text();
+    const s = '// ===== PRODUCTS_START =====', e = '// ===== PRODUCTS_END =====';
+    if (!html.includes(s) || !html.includes(e)) { setStatus('err', '⚠ Markers not found — make sure this is the correct index.html.'); return; }
+    html = html.slice(0, html.indexOf(s)+s.length) + '\n' + buildProductsCode() + '\n' + html.slice(html.indexOf(e));
+    const w = await websiteFileHandle.createWritable(); await w.write(html); await w.close();
+    const btn = document.getElementById('publishBtn');
+    btn.textContent = '✓ Updated!'; btn.classList.add('success');
+    setTimeout(() => { btn.textContent = '✦ Update index.html'; btn.classList.remove('success'); }, 3000);
+    setStatus('ok', `✓ ${products.length} product${products.length!==1?'s':''} published at ${new Date().toLocaleTimeString()}. Refresh index.html to see changes.`);
+    showToast(`✓ ${products.length} products published!`);
+  } catch(e) { setStatus('err', 'Write failed: ' + e.message); }
+}
+
+function buildProductsCode() {
+  const lines = products.map((p,i) => {
+    const det = (p.d||[]).length ? p.d.map(d=>`{l:${JSON.stringify(d.l)},v:${JSON.stringify(d.v)}}`).join(',') : '';
+    const img = p.img ? `,img:${JSON.stringify(p.img)}` : '';
+    return `  {id:${i+1},e:${JSON.stringify(p.e||'💊')},n:${JSON.stringify(p.n)},c:${JSON.stringify(p.c)},cl:${JSON.stringify(p.cl)},p:${JSON.stringify(p.p)},b:${JSON.stringify(p.b||'')},was:${JSON.stringify(p.was||'')},desc:${JSON.stringify(p.desc||'')},d:[${det}]${img}}`;
+  });
+  return `const prods = [\n${lines.join(',\n')}\n];`;
+}
+
+function updateLinkStatus(linked, name) {
+  document.getElementById('statusDot').className = 'site-status-dot' + (linked ? ' linked' : '');
+  document.getElementById('statusText').textContent = linked ? `Linked: ${name}` : 'No website linked';
+}
+function setStatus(type, msg) {
+  const el = document.getElementById('publishStatus');
+  el.className = 'publish-status ' + type; el.textContent = msg;
+}
+
+// ── FORM ───────────────────────────────────────────────────────────────
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='manual')||(i===1&&tab==='csv')));
+  document.getElementById('manualSection').classList.toggle('active', tab==='manual');
+  document.getElementById('csvSection').classList.toggle('active', tab==='csv');
+}
+
+function selectBadge(val) {
+  document.getElementById('fBadge').value = val;
+  document.getElementById('badgeNone').className = 'badge-opt' + (val===''?' sel-none':'');
+  document.getElementById('badgeNew').className  = 'badge-opt' + (val==='new'?' sel-new':'');
+  document.getElementById('badgeSale').className = 'badge-opt' + (val==='sale'?' sel-sale':'');
+}
+
+function getDetails() {
+  const L = document.querySelectorAll('.dlabel'), V = document.querySelectorAll('.dvalue');
+  return Array.from(L).map((l,i)=>({l:l.value.trim(),v:V[i].value.trim()})).filter(d=>d.l&&d.v);
+}
+
+function saveProduct() {
+  const name=document.getElementById('fName').value.trim(), cat=document.getElementById('fCat').value, price=document.getElementById('fPrice').value.trim();
+  if (!name||!cat||!price) { showToast('⚠ Name, category and price required'); return; }
+  const editId = document.getElementById('editId').value;
+  const prod = {
+    id: editId?parseInt(editId):nextId++, n:name, c:cat, cl:catLabels[cat]||cat,
+    p: price.startsWith('€')?price:'€'+price,
+    was: document.getElementById('fWas').value.trim()?'€'+document.getElementById('fWas').value.trim().replace('€',''):'',
+    b: document.getElementById('fBadge').value,
+    desc: document.getElementById('fDesc').value.trim(),
+    d: getDetails(), img: resolvedImg(), e: getCatEmoji(cat)
+  };
+  if (editId) { const idx=products.findIndex(p=>p.id===parseInt(editId)); if(idx!==-1)products[idx]=prod; showToast('✓ Product updated!'); }
+  else { products.push(prod); showToast('✓ Product added!'); }
+  resetForm(); renderList(); updateStats();
+}
+
+function getCatEmoji(cat) {
+  return {vitamins:'💊',skincare:'🧴',baby:'🍼',pain:'💪',cold:'🤧',digestive:'🌿',allergy:'🌸',diabetes:'🩺',eyecare:'👁️',dental:'🦷',other:'📦'}[cat]||'📦';
+}
+
+function resetForm() {
+  ['fName','fPrice','fWas','fDesc','editId','fImgUrl'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fCat').value=''; selectBadge(''); clearImage();
+  document.querySelectorAll('.dlabel,.dvalue').forEach(el=>el.value='');
+  document.getElementById('formTitle').textContent='➕ Add Product';
+  document.getElementById('cancelEditBtn').style.display='none';
+}
+function cancelEdit() { resetForm(); }
+
+function editProduct(id) {
+  const p=products.find(x=>x.id===id); if(!p) return;
+  switchTab('manual');
+  document.getElementById('editId').value=p.id;
+  document.getElementById('fName').value=p.n;
+  document.getElementById('fCat').value=p.c;
+  document.getElementById('fPrice').value=p.p.replace('€','');
+  document.getElementById('fWas').value=p.was?p.was.replace('€',''):'';
+  document.getElementById('fDesc').value=p.desc||'';
+  selectBadge(p.b||'');
+  const L=document.querySelectorAll('.dlabel'),V=document.querySelectorAll('.dvalue');
+  (p.d||[]).forEach((d,i)=>{if(L[i]){L[i].value=d.l;V[i].value=d.v;}});
+  if (p.img) {
+    if (p.img.startsWith('http')) {
+      currentImgUrl=p.img;
+      document.getElementById('fImgUrl').value=p.img;
+      document.getElementById('urlPreview').src=p.img;
+      document.getElementById('urlPreview').style.display='block';
+    } else {
+      currentImg=p.img;
+      document.getElementById('imgPreview').src=p.img;
+      document.getElementById('imgPreview').style.display='block';
+      document.getElementById('uploadBox').style.display='none';
+      document.getElementById('clearImgBtn').style.display='inline-block';
+    }
+  }
+  document.getElementById('formTitle').textContent='✏️ Edit Product';
+  document.getElementById('cancelEditBtn').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteProduct(id) {
+  if (!confirm('Delete this product?')) return;
+  products=products.filter(p=>p.id!==id); renderList(); updateStats(); showToast('🗑 Removed');
+}
+function filterList(q) { filterQ=q.toLowerCase(); renderList(); }
+
+function renderList() {
+  const tbody=document.getElementById('prodTbody'), empty=document.getElementById('emptyState');
+  const list=products.filter(p=>!filterQ||p.n.toLowerCase().includes(filterQ)||p.cl.toLowerCase().includes(filterQ));
+  if (!list.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  tbody.innerHTML=list.map(p=>`
+    <tr>
+      <td><div class="prod-thumb">${p.img?`<img src="${p.img}" alt="${p.n}">`:(p.e||'💊')}</div></td>
+      <td><div class="prod-name-col"><div class="name">${p.n}</div><div class="cat">${p.cl}</div></div></td>
+      <td class="price-col">${p.p}${p.was?`<span class="price-was">${p.was}</span>`:''}</td>
+      <td>${p.b==='new'?'<span class="badge badge-new">New</span>':p.b==='sale'?'<span class="badge badge-sale">Sale</span>':'<span style="color:var(--mid);font-size:0.73rem;">—</span>'}</td>
+      <td><div class="action-btns"><button class="btn-edit" onclick="editProduct(${p.id})">✏ Edit</button><button class="btn-del" onclick="deleteProduct(${p.id})">✕</button></div></td>
+    </tr>`).join('');
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent=products.length;
+  document.getElementById('statCats').textContent=new Set(products.map(p=>p.c)).size;
+  document.getElementById('statImgs').textContent=products.filter(p=>p.img).length;
+  document.getElementById('statSale').textContent=products.filter(p=>p.b==='sale').length;
+}
+
+// ── CSV ────────────────────────────────────────────────────────────────
+
+function handleCSV(input) {
+  const file=input.files[0]; if(!file) return;
+  const r=new FileReader(); r.onload=(e)=>{document.getElementById('csvText').value=e.target.result;showToast('File loaded — click Import');}; r.readAsText(file);
+}
+
+function parseCSVLine(line) {
+  const result=[]; let cur=''; let inQ=false;
+  for (let i=0;i<line.length;i++) {
+    const ch=line[i];
+    if (ch==='"') { inQ=!inQ; }
+    else if (ch===','&&!inQ) { result.push(cur.trim()); cur=''; }
+    else { cur+=ch; }
+  }
+  result.push(cur.trim()); return result;
+}
+
+function importCSV() {
+  const raw=document.getElementById('csvText').value.trim(); if (!raw){showToast('⚠ Nothing to import');return;}
+  const lines=raw.split('\n').filter(l=>l.trim()); let added=0,skipped=0;
+  lines.forEach(line=>{
+    const parts=parseCSVLine(line); if(parts.length<3){skipped++;return;}
+    const [name,cat,price,was,desc,badge,imgUrl]=parts;
+    if (!name||!cat||!price||name.toLowerCase()==='name'){skipped++;return;}
+    const cc=Object.keys(catLabels).find(k=>k===cat.toLowerCase()||catLabels[k].toLowerCase()===cat.toLowerCase())||'other';
+    const cleanImg=(imgUrl||'').trim();
+    products.push({id:nextId++,n:name,c:cc,cl:catLabels[cc]||cc,p:price.startsWith('€')?price:'€'+price,was:was?(was.startsWith('€')?was:'€'+was):'',b:['new','sale'].includes((badge||'').toLowerCase().trim())?badge.toLowerCase().trim():'',desc:desc||'',d:[],img:cleanImg,e:getCatEmoji(cc)});
+    added++;
+  });
+  renderList(); updateStats(); document.getElementById('csvText').value='';
+  showToast(`✓ Imported ${added} products${skipped?` (${skipped} skipped)`:''}`);
+}
+
+function downloadTemplate() {
+  const csv='Name,Category,Price,Was Price,Description,Badge,Image URL\n'+
+    'Vitamin D3 1000IU,vitamins,8.99,,Great for immune support 90 caps,new,https://example.com/vitd3.jpg\n'+
+    'Nurofen Cold & Flu,cold,7.99,9.99,Fast relief from cold and flu,sale,\n'+
+    'Sudocrem 400g,baby,6.99,,,, ';
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='belarmine-products-template.csv'; a.click();
+}
+
+function exportCSV() {
+  if (!products.length){showToast('⚠ No products to export');return;}
+  const rows=['Name,Category,Price,Was Price,Description,Badge,Image URL'];
+  products.forEach(p=>rows.push(`"${p.n}","${p.cl}","${p.p}","${p.was||''}","${(p.desc||'').replace(/"/g,'""')}","${p.b||''}","${p.img&&p.img.startsWith('http')?p.img:''}"`));
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'})); a.download='belarmine-products-backup.csv'; a.click();
+  showToast('⬇ CSV backup downloaded');
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+if (!('showOpenFilePicker' in window)) {
+  document.getElementById('publishStatus').className='publish-status err';
+  document.getElementById('publishStatus').textContent='⚠ Use Google Chrome or Microsoft Edge for the publish feature.';
+}
+
+renderList(); updateStats();
+</script>
+</body>
+</html>
